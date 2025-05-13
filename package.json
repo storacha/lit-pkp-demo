@@ -1,42 +1,45 @@
 {
-	"name": "lit-pkp-demo",
-	"private": true,
-	"version": "0.0.0",
-	"type": "module",
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-		"preview": "vite preview"
-	},
-	"dependencies": {
-		"@lit-protocol/constants": "^7.1.1",
-		"@lit-protocol/crypto": "^7.1.1",
-		"@lit-protocol/lit-auth-client": "^7.1.1",
-		"@lit-protocol/lit-node-client": "^7.1.1",
-		"@simplewebauthn/browser": "^13.1.0",
-		"@storacha/encrypt-upload-client": "^0.0.11",
-		"@ucanto/core": "^10.3.1",
-		"@web3modal/ethereum": "^2.7.1",
-		"@web3modal/react": "^2.7.1",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
-		"react-router-dom": "^7.6.0",
-		"viem": "^2.29.2",
-		"wagmi": "^2.15.2"
-	},
-	"devDependencies": {
-		"@types/react": "^18.2.43",
-		"@types/react-dom": "^18.2.17",
-		"@vitejs/plugin-react": "^4.2.1",
-		"browserify-zlib": "^0.2.0",
-		"eslint": "^8.55.0",
-		"eslint-plugin-react": "^7.33.2",
-		"eslint-plugin-react-hooks": "^4.6.0",
-		"eslint-plugin-react-refresh": "^0.4.5",
-		"process": "^0.11.10",
-		"stream-browserify": "^3.0.0",
-		"util": "^0.12.5",
-		"vite": "^5.0.8"
-	}
+  "name": "lit-pkp-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ipld/car": "^5.4.1",
+    "@lit-protocol/constants": "^7.1.1",
+    "@lit-protocol/crypto": "^7.1.1",
+    "@lit-protocol/lit-auth-client": "^7.1.1",
+    "@lit-protocol/lit-node-client": "^7.1.1",
+    "@simplewebauthn/browser": "^13.1.0",
+    "@storacha/client": "^1.2.8",
+    "@storacha/encrypt-upload-client": "file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.16.tgz",
+    "@ucanto/core": "^10.3.1",
+    "@ucanto/principal": "^9.0.2",
+    "@web3modal/ethereum": "^2.7.1",
+    "@web3modal/react": "^2.7.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.6.0",
+    "viem": "^2.29.2",
+    "wagmi": "^2.15.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.21",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.4.1",
+    "browserify-zlib": "^0.2.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5",
+    "vite": "^5.4.19"
+  }
 }
