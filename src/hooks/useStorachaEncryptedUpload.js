@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import * as Client from '@storacha/client';
 import * as Proof from '@storacha/client/proof';
+import { DID } from '@ucanto/core';
 import {
   accessServiceConnection,
   uploadServiceConnection,
@@ -11,6 +12,11 @@ import { StoreMemory } from '@storacha/client/stores/memory';
 import * as Signer from '@ucanto/principal/ed25519';
 import { create as createEncryptionClient } from '@storacha/encrypt-upload-client';
 import { BrowserCryptoAdapter } from '@storacha/encrypt-upload-client/browser';
+
+/**
+ * The Storage Service Identifier which will verify the delegation.
+ */
+const STORAGE_SERVICE_DID = 'did:web:web3.storage';
 
 function useStorachaEncryptedUpload() {
   const [loading, setLoading] = useState(false);
@@ -35,12 +41,11 @@ function useStorachaEncryptedUpload() {
     if (!agentPk) throw new Error('Agent private key not set in VITE_AGENT_PK');
     const principal = Signer.parse(agentPk);
     const store = new StoreMemory();
-    const serviceID = principal.did();
-    console.log('serviceID', serviceID);
+    const serviceDID = DID.parse(STORAGE_SERVICE_DID);
     const serviceConf = {
-      access: accessServiceConnection({ id: serviceID }),
-      upload: uploadServiceConnection({ id: serviceID }),
-      filecoin: filecoinServiceConnection({ id: serviceID }),
+      access: accessServiceConnection({ id: serviceDID }),
+      upload: uploadServiceConnection({ id: serviceDID }),
+      filecoin: filecoinServiceConnection({ id: serviceDID }),
       gateway: gatewayServiceConnection(),
     };
     const client = await Client.create({ principal, store, serviceConf });
@@ -86,8 +91,8 @@ function useStorachaEncryptedUpload() {
         // sessionSigs,
       });
       const link = await encryptedClient.uploadEncryptedFile(file);
-      setCid(link.cid || link);
-      return link.cid || link;
+      setCid(link.toString());
+      return link.toString();
     } catch (err) {
       setError('Failed to encrypt and upload file: ' + err.message);
       throw err;

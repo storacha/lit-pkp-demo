@@ -18,7 +18,7 @@
     "@lit-protocol/lit-node-client": "^7.1.1",
     "@simplewebauthn/browser": "^13.1.0",
     "@storacha/client": "^1.2.8",
-    "@storacha/encrypt-upload-client": "file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.16.tgz",
+    "@storacha/encrypt-upload-client": "file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.17.tgz",
     "@ucanto/core": "^10.3.1",
     "@ucanto/principal": "^9.0.2",
     "@web3modal/ethereum": "^2.7.1",

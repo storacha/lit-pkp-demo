@@ -33,8 +33,8 @@ importers:
         specifier: ^1.2.8
         version: 1.2.8(encoding@0.1.13)
       '@storacha/encrypt-upload-client':
-        specifier: file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.16.tgz
-        version: file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.16.tgz(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.17.tgz
+        version: file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.17.tgz(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@ucanto/core':
         specifier: ^10.3.1
         version: 10.3.1
@@ -1125,9 +1125,9 @@ packages:
     resolution: {integrity: sha512-0ee1t15yG4xdyIYz2iL+wP06VnGQf8zJ/xpszjf4sdP2sTgAVzx92LfEgHcuIbFF4sabcJXzHFAcMi8l8u64Mg==}
     engines: {node: '>=16.15'}
 
-  '@storacha/encrypt-upload-client@file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.16.tgz':
-    resolution: {integrity: sha512-q4oKWLH0BzZ71TmB0Gl20ZbRmjWFGIFCcCzTbk8+jmMjoCjvKYiRemwa8eqb3mNSOQra0huWDT/4l0QUzjZMwQ==, tarball: file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.16.tgz}
-    version: 0.0.16
+  '@storacha/encrypt-upload-client@file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.17.tgz':
+    resolution: {integrity: sha512-cvTvw2HCpcDR03atUF3uBehYLIimMK0Hwd1PmCG7K1M1f7UsiSPWvkDb9ZAZF44lwP4AttotZbDTABC3waV1FQ==, tarball: file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.17.tgz}
+    version: 0.0.17
     engines: {node: '>=18'}
 
   '@storacha/filecoin-client@1.0.6':
@@ -5937,7 +5937,7 @@ snapshots:
 
   '@storacha/did-mailto@1.0.2': {}
 
-  '@storacha/encrypt-upload-client@file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.16.tgz(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@storacha/encrypt-upload-client@file:../../upload-service/packages/encrypt-upload-client/storacha-encrypt-upload-client-0.0.17.tgz(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@ipld/car': 5.4.1
       '@ipld/dag-cbor': 9.2.3
