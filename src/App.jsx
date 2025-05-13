@@ -8,10 +8,12 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/upload" element={<UploadFile />} />
-        </Routes>
+        <div className="app">
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/upload" element={<UploadFile />} />
+          </Routes>
+        </div>
       </Router>
     </AuthProvider>
   )

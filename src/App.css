@@ -9,17 +9,21 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.login-container {
+.login-container,
+.pkp-panel-wide {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding: 2.5rem 2rem;
+  justify-content: center;
+  background: #fff;
+  color: #213547;
   border-radius: 16px;
-  background-color: #fff;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  max-width: 400px;
+  padding: 2.5rem 2rem;
+  max-width: 700px;
   width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .login-container h1 {
@@ -68,13 +72,22 @@
   margin: 0 auto;
 }
 
-@media (max-width: 600px) {
-  .login-container {
-    padding: 1.2rem 0.5rem;
+@media (max-width: 900px) {
+  .login-container,
+  .pkp-panel-wide {
     max-width: 95vw;
+    padding: 1.5rem 0.5rem;
+    margin: 1rem;
   }
-  .recovery-setup {
-    max-width: 95vw;
+}
+
+@media (max-width: 600px) {
+  .login-container,
+  .pkp-panel-wide {
+    max-width: 100vw;
+    padding: 1rem 0.2rem;
+    margin: 0.5rem;
+    border-radius: 8px;
   }
 }
 
@@ -117,11 +130,6 @@
   max-width: 100%;
   box-shadow: 0 2px 8px rgba(31, 38, 135, 0.05);
   position: relative;
-}
-
-.pkp-panel-wide {
-  max-width: 700px;
-  width: 100%;
 }
 
 .copy-btn {
