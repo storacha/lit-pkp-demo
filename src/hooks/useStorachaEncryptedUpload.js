@@ -25,7 +25,6 @@ function useStorachaEncryptedUpload() {
   // Helper to parse base64 CAR proof
   const parseProof = async (data) => {
     if (!data) throw new Error('No proof data provided');
-    console.log("data", data);
     return Proof.parse(data);
   }
 
@@ -37,6 +36,7 @@ function useStorachaEncryptedUpload() {
     const principal = Signer.parse(agentPk);
     const store = new StoreMemory();
     const serviceID = principal.did();
+    console.log('serviceID', serviceID);
     const serviceConf = {
       access: accessServiceConnection({ id: serviceID }),
       upload: uploadServiceConnection({ id: serviceID }),
@@ -72,7 +72,7 @@ function useStorachaEncryptedUpload() {
   };
 
   // Step 2: Encrypt and upload file
-  const encryptAndUpload = async (file) => {
+  const encryptAndUpload = async (file, litClient, sessionSigs) => {
     setLoading(true);
     setError('');
     setCid('');
@@ -81,7 +81,9 @@ function useStorachaEncryptedUpload() {
       await client.setCurrentSpace(spaceDid);
       const encryptedClient = await createEncryptionClient({
         storachaClient: client,
-        cryptoAdapter: new BrowserCryptoAdapter()
+        cryptoAdapter: new BrowserCryptoAdapter(),
+        litClient,
+        // sessionSigs,
       });
       const link = await encryptedClient.uploadEncryptedFile(file);
       setCid(link.cid || link);

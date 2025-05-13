@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ipld/car": "^5.4.1",
+    "@lit-protocol/auth-helpers": "^7.1.1",
     "@lit-protocol/constants": "^7.1.1",
     "@lit-protocol/crypto": "^7.1.1",
     "@lit-protocol/lit-auth-client": "^7.1.1",

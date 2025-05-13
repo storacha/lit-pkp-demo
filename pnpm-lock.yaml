@@ -11,6 +11,9 @@ importers:
       '@ipld/car':
         specifier: ^5.4.1
         version: 5.4.1
+      '@lit-protocol/auth-helpers':
+        specifier: ^7.1.1
+        version: 7.1.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/constants':
         specifier: ^7.1.1
         version: 7.1.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -4174,7 +4177,7 @@ snapshots:
   '@ethersproject/contracts@5.7.0':
     dependencies:
       '@ethersproject/abi': 5.8.0
-      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/abstract-provider': 5.8.0
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/address': 5.8.0
       '@ethersproject/bignumber': 5.8.0
@@ -4351,7 +4354,7 @@ snapshots:
 
   '@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
-      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/abstract-provider': 5.8.0
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/address': 5.8.0
       '@ethersproject/base64': 5.8.0

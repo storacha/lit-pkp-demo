@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import useStorachaEncryptedUpload from '../hooks/useStorachaEncryptedUpload';
+import { useAuth } from '../context/AuthContext';
 
 export function UploadFile() {
   const [delegation, setDelegation] = useState('');
@@ -11,6 +12,8 @@ export function UploadFile() {
     loading, error, spaceDid, spaceName, cid,
     loadDelegation, encryptAndUpload, setError
   } = useStorachaEncryptedUpload();
+
+  const { getOrCreateLitClient, getSessionSigs, sessionSigs } = useAuth();
 
   // If env delegation is present and loaded, skip to step 2
   useEffect(() => {
@@ -43,10 +46,17 @@ export function UploadFile() {
   // Step 3: Encrypt and upload
   const handleEncryptAndUpload = async () => {
     try {
-      await encryptAndUpload(file);
+      console.log('Encrypt & Upload clicked');
+      const litClient = await getOrCreateLitClient();
+      // let sigs = sessionSigs;
+      // if (!sigs) {
+      //   sigs = await getSessionSigs();
+      // }
+      await encryptAndUpload(file, litClient);
       setStep(3);
     } catch (err) {
-      // error is handled in hook
+      console.error('Upload error:', err);
+      setError(err.message || 'Unknown error');
     }
   };
 
@@ -105,7 +115,7 @@ export function UploadFile() {
               Selected Space/Bucket
               <div style={{ marginTop: 4 }}>
                 <span style={{ color: "#357abd" }}>
-                  {spaceName ? spaceName : <i>Unnamed</i>}
+                  {spaceName ? <b>{spaceName}</b> : <i>Unnamed</i>}
                 </span>
               </div>
             </div>
