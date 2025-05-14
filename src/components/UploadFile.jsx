@@ -1,6 +1,35 @@
 import { useState, useEffect } from 'react';
 import useStorachaEncryptedUpload from '../hooks/useStorachaEncryptedUpload';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+// Spinner CSS (inline for simplicity)
+const spinnerStyle = {
+  width: 48,
+  height: 48,
+  border: '6px solid #e0e0e0',
+  borderTop: '6px solid #357abd',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+  margin: '0 auto',
+};
+
+const overlayStyle = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100vw',
+  height: '100vh',
+  background: 'rgba(255,255,255,0.7)',
+  zIndex: 1000,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+// Add keyframes for spinner
+const spinnerKeyframes = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
 
 export function UploadFile() {
   const [delegation, setDelegation] = useState('');
@@ -14,6 +43,7 @@ export function UploadFile() {
   } = useStorachaEncryptedUpload();
 
   const { getOrCreateLitClient, getSessionSigs, sessionSigs } = useAuth();
+  const navigate = useNavigate();
 
   // If env delegation is present and loaded, skip to step 2
   useEffect(() => {
@@ -46,10 +76,9 @@ export function UploadFile() {
   // Step 3: Encrypt and upload
   const handleEncryptAndUpload = async () => {
     try {
-      console.log('Encrypt & Upload clicked');
       const litClient = await getOrCreateLitClient();
-      await encryptAndUpload(file, litClient);
-      setStep(3);
+      const uploadedCid = await encryptAndUpload(file, litClient);
+      navigate("/upload-success", { state: { cid: uploadedCid.toString() } });
     } catch (err) {
       console.error('Upload error:', err);
       setError(err.message || 'Unknown error');
@@ -58,11 +87,26 @@ export function UploadFile() {
 
   return (
     <div className="login-container pkp-panel-wide">
-      <h2>Upload File</h2>
-      <p>
-        This is where you will upload and encrypt files with Storacha & Lit
-        Protocol.
-      </p>
+      {/* Spinner keyframes style tag */}
+      <style>{spinnerKeyframes}</style>
+      {/* Loading overlay with spinner and message */}
+      {loading && step === 2 && (
+        <div style={overlayStyle}>
+          <div style={spinnerStyle}></div>
+          <div style={{ marginTop: 24, fontSize: 20, color: '#357abd', fontWeight: 500 }}>
+            Encrypting & Uploading...
+          </div>
+        </div>
+      )}
+      {step !== 3 && (
+        <>
+          <h2>Upload File</h2>
+          <p>
+            This is where you will upload and encrypt files with Storacha & Lit
+            Protocol.
+          </p>
+        </>
+      )}
 
       {/* Step 1: Delegation input (skip if env var is present and loaded) */}
       {step === 1 && !envDelegation && (
@@ -224,64 +268,8 @@ export function UploadFile() {
         </>
       )}
 
-      {/* Step 3: Show CID and link */}
-      {step === 3 && cid && (
-        <div style={{
-          marginTop: "2rem",
-          background: "#f4f8fb",
-          borderRadius: 8,
-          padding: "1.2rem 1.2rem 1.5rem 1.2rem",
-          boxShadow: "0 1px 4px rgba(31,38,135,0.06)",
-          textAlign: "left"
-        }}>
-          <div style={{ fontWeight: 600, fontSize: "1.1rem", marginBottom: 8 }}>
-            ✅ File uploaded!
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <span style={{ fontWeight: 500 }}>CID:</span>
-            <span style={{
-              fontFamily: "Fira Mono, monospace",
-              background: "#fff",
-              borderRadius: 4,
-              padding: "2px 6px",
-              marginLeft: 8,
-              wordBreak: "break-all"
-            }}>{cid}</span>
-            <button
-              type="button"
-              title="Copy CID"
-              style={{
-                border: "none",
-                background: "none",
-                cursor: "pointer",
-                fontSize: "1.1rem",
-                color: "#357abd",
-                marginLeft: 6
-              }}
-              onClick={() => navigator.clipboard.writeText(cid)}
-            >📋</button>
-          </div>
-          <a
-            href={`https://storacha.link/ipfs/${cid}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "inline-block",
-              marginTop: 8,
-              padding: "0.6rem 1.2rem",
-              background: "#357abd",
-              color: "#fff",
-              borderRadius: 6,
-              textDecoration: "none",
-              fontWeight: 500
-            }}
-          >
-            🔗 View File on Storacha Gateway
-          </a>
-        </div>
-      )}
-
-      {error && (
+      {/* Only show error if not on step 3 */}
+      {error && step !== 3 && (
         <div className="error-message" style={{ marginTop: "1rem" }}>
           {error}
         </div>

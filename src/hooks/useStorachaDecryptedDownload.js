@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import * as Client from '@storacha/client';
 import * as Proof from '@storacha/client/proof';
 import { DID } from '@ucanto/core';
@@ -11,28 +11,23 @@ import {
 import { StoreMemory } from '@storacha/client/stores/memory';
 import * as Signer from '@ucanto/principal/ed25519';
 import { create as createEncryptionClient } from '@storacha/encrypt-upload-client';
-import { BrowserCryptoAdapter } from '@storacha/encrypt-upload-client/browser';
+import { BrowserCryptoAdapter } from '../crypto-adapters/browser-crypto-adapter';
 
-/**
- * The Storage Service Identifier which will verify the delegation.
- */
 const STORAGE_SERVICE_DID = 'did:web:web3.storage';
 
-function useStorachaEncryptedUpload() {
+function useStorachaDecryptedDownload() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [space, setSpace] = useState(null); // space object
-  const [spaceDid, setSpaceDid] = useState('');
-  const [spaceName, setSpaceName] = useState('');
-  const [cid, setCid] = useState('');
-  const [proof, setProof] = useState(null);
+  const [decryptedUrl, setDecryptedUrl] = useState(null);
+  const [decryptedContent, setDecryptedContent] = useState('');
   const clientRef = useRef(null);
+  const [proof, setProof] = useState(null);
 
   // Helper to parse base64 CAR proof
   const parseProof = async (data) => {
     if (!data) throw new Error('No proof data provided');
     return Proof.parse(data);
-  }
+  };
 
   // Initialize Storacha client ONCE
   const getOrCreateStorachaClient = async () => {
@@ -53,7 +48,7 @@ function useStorachaEncryptedUpload() {
     return client;
   };
 
-  // Step 1: Load delegation and set space
+  // Load delegation and set proof
   const loadDelegation = async (delegation) => {
     setLoading(true);
     setError('');
@@ -61,69 +56,84 @@ function useStorachaEncryptedUpload() {
       const proof = await parseProof(delegation);
       setProof(proof);
       const client = await getOrCreateStorachaClient();
-      const spaceObj = await client.addSpace(proof);
       await client.addProof(proof);
-      await client.setCurrentSpace(spaceObj.did());
-      setSpace(spaceObj);
-      setSpaceDid(spaceObj.did());
-      if (spaceObj.name) setSpaceName(spaceObj.name);
-      return spaceObj.did();
+      // Optionally: set space if needed
     } catch (err) {
-      setError('Invalid delegation or failed to load space: ' + err.message);
+      setError('Invalid delegation or failed to load proof: ' + err.message);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Encrypt and upload file
-  const encryptAndUpload = async (file, litClient, sessionSigs) => {
+  // Decrypt file using encryptedClient.retrieveAndDecryptFile
+  // Accepts: cid, litClient, sessionSigs
+  const decryptFile = async (cid, litClient, sessionSigs) => {
     setLoading(true);
     setError('');
-    setCid('');
+    setDecryptedUrl(null);
+    setDecryptedContent('');
     try {
       const client = await getOrCreateStorachaClient();
-      await client.setCurrentSpace(spaceDid);
+      // TODO: set current space if needed
       const encryptedClient = await createEncryptionClient({
         storachaClient: client,
         cryptoAdapter: new BrowserCryptoAdapter(),
         litClient,
-        // sessionSigs,
+        sessionSigs,
       });
-      
-      const link = await encryptedClient.uploadEncryptedFile(file);
-      setCid(link.toString());
-      return link.toString();
+      const result = await encryptedClient.retrieveAndDecryptFile(cid, {
+        // Add any required options here
+      });
+      // result may be a Blob, Uint8Array, or object with metadata
+      if (result instanceof Blob) {
+        // Try to detect text vs binary
+        const text = await result.text();
+        // Heuristic: if text is printable, show as text, else offer download
+        if (/^[\x20-\x7E\r\n\t]+$/.test(text) && text.length < 10000) {
+          setDecryptedContent(text);
+        } else {
+          setDecryptedUrl(URL.createObjectURL(result));
+        }
+      } else if (result instanceof Uint8Array) {
+        // Try to decode as text
+        const decoder = new TextDecoder();
+        const text = decoder.decode(result);
+        if (/^[\x20-\x7E\r\n\t]+$/.test(text) && text.length < 10000) {
+          setDecryptedContent(text);
+        } else {
+          setDecryptedUrl(URL.createObjectURL(new Blob([result])));
+        }
+      } else if (result && result.content) {
+        // If result is an object with content and metadata
+        const { content, fileType } = result;
+        if (fileType && fileType.startsWith('text/')) {
+          setDecryptedContent(await content.text());
+        } else {
+          setDecryptedUrl(URL.createObjectURL(content));
+        }
+      } else {
+        setError('Unknown file format or decryption result');
+      }
     } catch (err) {
-      setError('Failed to encrypt and upload file: ' + err.message);
+      setError('Failed to decrypt file: ' + err.message);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-load delegation from env var on mount
-  useEffect(() => {
-    const envDelegation = import.meta.env.VITE_DELEGATION_CAR_BASE64;
-    if (envDelegation) {
-      loadDelegation(envDelegation).catch(() => { });
-    }
-  }, []);
-
   return {
     loading,
     error,
-    space,
-    spaceDid,
-    spaceName,
-    cid,
-    proof,
+    decryptedUrl,
+    decryptedContent,
     loadDelegation,
-    encryptAndUpload,
+    decryptFile,
     setError,
-    setCid,
-    setSpace,
+    setDecryptedUrl,
+    setDecryptedContent,
   };
 }
 
-export default useStorachaEncryptedUpload; 
+export default useStorachaDecryptedDownload; 
