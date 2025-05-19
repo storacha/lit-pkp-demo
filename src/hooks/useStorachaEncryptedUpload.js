@@ -77,7 +77,7 @@ function useStorachaEncryptedUpload() {
   };
 
   // Step 2: Encrypt and upload file
-  const encryptAndUpload = async (file, litClient, sessionSigs) => {
+  const encryptAndUpload = async (file, litClient) => {
     setLoading(true);
     setError('');
     setCid('');
@@ -88,12 +88,16 @@ function useStorachaEncryptedUpload() {
         storachaClient: client,
         cryptoAdapter: new BrowserCryptoAdapter(),
         litClient,
-        // sessionSigs,
       });
       
-      const link = await encryptedClient.uploadEncryptedFile(file);
-      setCid(link.toString());
-      return link.toString();
+      // Read and log file content
+      const fileContent = await file.text();
+      console.log('File content:', fileContent);
+      console.log('Uploading file:', file);
+      
+      const result = await encryptedClient.uploadEncryptedFile(file);
+      setCid(result.toString());
+      return result.toString();
     } catch (err) {
       setError('Failed to encrypt and upload file: ' + err.message);
       throw err;

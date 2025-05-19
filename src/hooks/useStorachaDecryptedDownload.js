@@ -11,7 +11,7 @@ import {
 import { StoreMemory } from '@storacha/client/stores/memory';
 import * as Signer from '@ucanto/principal/ed25519';
 import { create as createEncryptionClient } from '@storacha/encrypt-upload-client';
-import { BrowserCryptoAdapter } from '../crypto-adapters/browser-crypto-adapter';
+import { BrowserCryptoAdapter } from '@storacha/encrypt-upload-client/browser';
 
 const STORAGE_SERVICE_DID = 'did:web:web3.storage';
 
@@ -67,55 +67,41 @@ function useStorachaDecryptedDownload() {
   };
 
   // Decrypt file using encryptedClient.retrieveAndDecryptFile
-  // Accepts: cid, litClient, sessionSigs
-  const decryptFile = async (cid, litClient, sessionSigs) => {
+  const decryptFile = async (cid, delegation, primaryPKP, authMethod, litClient) => {
+    console.log('Decrypting file with CID:', cid);
     setLoading(true);
     setError('');
     setDecryptedUrl(null);
     setDecryptedContent('');
     try {
       const client = await getOrCreateStorachaClient();
-      // TODO: set current space if needed
       const encryptedClient = await createEncryptionClient({
         storachaClient: client,
         cryptoAdapter: new BrowserCryptoAdapter(),
         litClient,
-        sessionSigs,
       });
-      const result = await encryptedClient.retrieveAndDecryptFile(cid, {
-        // Add any required options here
-      });
-      // result may be a Blob, Uint8Array, or object with metadata
-      if (result instanceof Blob) {
-        // Try to detect text vs binary
-        const text = await result.text();
-        // Heuristic: if text is printable, show as text, else offer download
-        if (/^[\x20-\x7E\r\n\t]+$/.test(text) && text.length < 10000) {
-          setDecryptedContent(text);
-        } else {
-          setDecryptedUrl(URL.createObjectURL(result));
-        }
-      } else if (result instanceof Uint8Array) {
-        // Try to decode as text
-        const decoder = new TextDecoder();
-        const text = decoder.decode(result);
-        if (/^[\x20-\x7E\r\n\t]+$/.test(text) && text.length < 10000) {
-          setDecryptedContent(text);
-        } else {
-          setDecryptedUrl(URL.createObjectURL(new Blob([result])));
-        }
-      } else if (result && result.content) {
-        // If result is an object with content and metadata
-        const { content, fileType } = result;
-        if (fileType && fileType.startsWith('text/')) {
-          setDecryptedContent(await content.text());
-        } else {
-          setDecryptedUrl(URL.createObjectURL(content));
-        }
-      } else {
-        setError('Unknown file format or decryption result');
+      const signer = {
+        pkpPublicKey: primaryPKP.pkpPublicKey,
+        authMethod: authMethod,
       }
+      console.log('Signer:', signer);
+      const result = await encryptedClient.retrieveAndDecryptFile(signer, cid, delegation);
+      const reader = result.getReader()
+      const decoder = new TextDecoder()
+      let content = ''
+
+      let done = false
+      while (!done) {
+        const { value, done: isDone } = await reader.read()
+        done = isDone
+        if (value) {
+          content += decoder.decode(value, { stream: true })
+        }
+      }
+      console.log('Decrypted content:', content);
+      setDecryptedContent(content);
     } catch (err) {
+      console.error('Error in decryptFile:', err);
       setError('Failed to decrypt file: ' + err.message);
       throw err;
     } finally {

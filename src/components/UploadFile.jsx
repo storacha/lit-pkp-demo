@@ -42,7 +42,7 @@ export function UploadFile() {
     loadDelegation, encryptAndUpload, setError
   } = useStorachaEncryptedUpload();
 
-  const { getOrCreateLitClient, getSessionSigs, sessionSigs } = useAuth();
+  const { getOrCreateLitClient } = useAuth();
   const navigate = useNavigate();
 
   // If env delegation is present and loaded, skip to step 2
