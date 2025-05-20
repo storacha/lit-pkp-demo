@@ -1,6 +1,6 @@
 import { AuthProvider } from './context/AuthContext'
 import { Login } from './components/Login'
-import { UploadFile } from './components/UploadFile'
+import { EncryptFile } from './components/EncryptFile'
 import { DecryptFile } from './components/DecryptFile'
 import { UploadSuccess } from './components/UploadSuccess'
 import './App.css'
@@ -32,7 +32,7 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/upload" element={<UploadFile />} />
+            <Route path="/upload" element={<EncryptFile />} />
             <Route path="/decrypt" element={<DecryptFile />} />
             <Route path="/upload-success" element={<UploadSuccess />} />
           </Routes>

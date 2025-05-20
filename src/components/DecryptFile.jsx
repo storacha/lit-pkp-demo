@@ -1,33 +1,35 @@
-import { useState, useEffect } from 'react';
-import useStorachaDecryptedDownload from '../hooks/useStorachaDecryptedDownload';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import useStorachaDecryptedDownload from "../hooks/useStorachaDecryptedDownload";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import * as Proof from '@storacha/client/proof';
-import { parseLink } from '@ucanto/core';
-import DelegationDetails from './DelegationDetails';
+import * as Proof from "@storacha/client/proof";
+import { parseLink } from "@ucanto/core";
+import DelegationDetails from "./DelegationDetails";
+import { getLitNodeClient } from '../utils/lit';
+
 // Spinner CSS (inline for simplicity)
 const spinnerStyle = {
   width: 48,
   height: 48,
-  border: '6px solid #e0e0e0',
-  borderTop: '6px solid #357abd',
-  borderRadius: '50%',
-  animation: 'spin 1s linear infinite',
-  margin: '0 auto',
+  border: "6px solid #e0e0e0",
+  borderTop: "6px solid #357abd",
+  borderRadius: "50%",
+  animation: "spin 1s linear infinite",
+  margin: "0 auto",
 };
 
 const overlayStyle = {
-  position: 'fixed',
+  position: "fixed",
   top: 0,
   left: 0,
-  width: '100vw',
-  height: '100vh',
-  background: 'rgba(255,255,255,0.7)',
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(255,255,255,0.7)",
   zIndex: 1000,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
 };
 
 // Add keyframes for spinner
@@ -35,12 +37,19 @@ const spinnerKeyframes = `@keyframes spin { 0% { transform: rotate(0deg); } 100%
 
 export function DecryptFile() {
   const location = useLocation();
-  const [cid, setCid] = useState(() => (location.state && location.state.cid) || '');
-  const [delegation, setDelegation] = useState('');
+  const [cid, setCid] = useState(
+    () => (location.state && location.state.cid) || ""
+  );
+  const [delegation, setDelegation] = useState("");
   const [delegationLoaded, setDelegationLoaded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [parsedDelegations, setParsedDelegations] = useState(null);
-  const { getOrCreateLitClient, primaryPKP, authMethod } = useAuth();
+  const {
+    primaryPKP,
+    primaryAuthMethod,
+    recoveryPKP,
+    recoveryAuthMethod,
+  } = useAuth();
   const {
     loading,
     error,
@@ -55,9 +64,9 @@ export function DecryptFile() {
   // Load delegation when it changes
   useEffect(() => {
     setDelegationLoaded(false);
-    setError('');
+    setError("");
     setDecryptedUrl(null);
-    setDecryptedContent('');
+    setDecryptedContent("");
     setParsedDelegations(null);
     if (delegation) {
       loadDelegation(delegation)
@@ -65,8 +74,10 @@ export function DecryptFile() {
           setDelegationLoaded(true);
           // Parse and set delegations for display
           Proof.parse(delegation)
-            .then(proof => setParsedDelegations([proof]))
-            .catch(err => console.error('Error parsing delegation for display:', err));
+            .then((proof) => setParsedDelegations([proof]))
+            .catch((err) =>
+              console.error("Error parsing delegation for display:", err)
+            );
         })
         .catch(() => setDelegationLoaded(false));
     }
@@ -74,26 +85,38 @@ export function DecryptFile() {
 
   // Handle decryption
   const handleDecrypt = async () => {
-    setError('');
+    setError("");
     setDecryptedUrl(null);
-    setDecryptedContent('');
-    const litClient = await getOrCreateLitClient();
+    setDecryptedContent("");
+    const litClient = await getLitNodeClient();
     const proof = await Proof.parse(delegation);
     const result = await proof.archive();
     if (result.error) {
       setError(result.error);
       return;
     }
-    const link = parseLink(cid)
+    const link = parseLink(cid);
     const delegationData = result.ok;
-    await decryptFile(link, delegationData, primaryPKP, authMethod, litClient);
+    await decryptFile(
+      link,
+      delegationData,
+      primaryPKP,
+      primaryAuthMethod,
+      litClient
+    );
   };
 
-  // Copy decrypted content
-  const handleCopy = () => {
-    navigator.clipboard.writeText(decryptedContent);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1200);
+  const handleRecoveryDecrypt = async () => {
+    const litClient = await getLitNodeClient();
+    const proof = await Proof.parse(delegation);
+    const result = await proof.archive();
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    const link = parseLink(cid);
+    const delegationData = result.ok;
+    await decryptFile(link, delegationData, recoveryPKP, recoveryAuthMethod, litClient);
   };
 
   return (
@@ -128,8 +151,8 @@ export function DecryptFile() {
       )}
       <h2 style={{ textAlign: "center", marginBottom: 8 }}>Decrypt File</h2>
       <p style={{ textAlign: "center", marginBottom: 24, color: "#444" }}>
-        Enter the CID and your decrypt delegation proof. The file content will be
-        downloaded, decrypted locally, and shown below.
+        Enter the CID and your decrypt delegation proof. The file content will
+        be downloaded, decrypted locally, and shown below.
       </p>
       {/* Blue panel for CID and Delegation */}
       <div
@@ -206,20 +229,42 @@ export function DecryptFile() {
         <DelegationDetails delegations={parsedDelegations} />
       )}
 
-      <button
-        className="next-btn"
-        onClick={handleDecrypt}
-        disabled={!cid || !delegationLoaded || loading}
-        style={{
-          width: "100%",
-          maxWidth: 240,
-          fontSize: "1.1rem",
-          margin: "0 auto 1.5rem auto",
-          display: "block",
-        }}
-      >
-        {loading ? "Downloading & Decrypting..." : "Download & Decrypt"}
-      </button>
+      <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+        <button
+          className="next-btn"
+          onClick={handleDecrypt}
+          disabled={!cid || !delegationLoaded || loading}
+          style={{
+            width: "100%",
+            maxWidth: 240,
+            fontSize: "1.1rem",
+            margin: "0 auto 1.5rem auto",
+            display: "block",
+          }}
+        >
+          {loading
+            ? `Downloading & Decrypting with primary PKP...`
+            : "Download & Decrypt (primary PKP)"}
+        </button>
+        <button
+          className="next-btn"
+          onClick={handleRecoveryDecrypt}
+          disabled={!cid || !delegationLoaded || loading}
+          style={{
+            width: "100%",
+            maxWidth: 240,
+            fontSize: "1.1rem",
+            margin: "0 auto 1.5rem auto",
+            display: "block",
+            backgroundColor: "#007bff",
+          }}
+        >
+          {loading
+            ? `Downloading & Decrypting with recovery PKP...`
+            : "Download & Decrypt (recovery PKP)"}
+        </button>
+      </div>
+
       <div
         style={{
           marginTop: "1.5rem",
@@ -259,4 +304,4 @@ export function DecryptFile() {
       )}
     </div>
   );
-} 
+}

@@ -10,6 +10,7 @@ export default defineConfig({
       stream: "stream-browserify",
       zlib: "browserify-zlib",
       util: 'util',
+      buffer: 'buffer'
     }
   },
   define: {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useStorachaEncryptedUpload from '../hooks/useStorachaEncryptedUpload';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getLitNodeClient } from '../utils/lit';
 
 // Spinner CSS (inline for simplicity)
 const spinnerStyle = {
@@ -31,18 +31,17 @@ const overlayStyle = {
 // Add keyframes for spinner
 const spinnerKeyframes = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
 
-export function UploadFile() {
+export function EncryptFile() {
   const [delegation, setDelegation] = useState('');
   const [file, setFile] = useState(null);
   const [step, setStep] = useState(1);
   const envDelegation = import.meta.env.VITE_DELEGATION_CAR_BASE64;
 
   const {
-    loading, error, spaceDid, spaceName, cid,
+    loading, error, spaceDid, spaceName,
     loadDelegation, encryptAndUpload, setError
   } = useStorachaEncryptedUpload();
 
-  const { getOrCreateLitClient } = useAuth();
   const navigate = useNavigate();
 
   // If env delegation is present and loaded, skip to step 2
@@ -76,7 +75,7 @@ export function UploadFile() {
   // Step 3: Encrypt and upload
   const handleEncryptAndUpload = async () => {
     try {
-      const litClient = await getOrCreateLitClient();
+      const litClient = await getLitNodeClient();
       const uploadedCid = await encryptAndUpload(file, litClient);
       navigate("/upload-success", { state: { cid: uploadedCid.toString() } });
     } catch (err) {
