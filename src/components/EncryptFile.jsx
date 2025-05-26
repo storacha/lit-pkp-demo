@@ -34,6 +34,7 @@ const spinnerKeyframes = `@keyframes spin { 0% { transform: rotate(0deg); } 100%
 export function EncryptFile() {
   const [delegation, setDelegation] = useState('');
   const [file, setFile] = useState(null);
+  const [fileContent, setFileContent] = useState(null);
   const [step, setStep] = useState(1);
   const envDelegation = import.meta.env.VITE_DELEGATION_CAR_BASE64;
 
@@ -68,8 +69,25 @@ export function EncryptFile() {
 
   // Step 2: Handle file selection
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
     setError('');
+
+    if (selectedFile) {
+      if (selectedFile.type.startsWith('text/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setFileContent(e.target.result);
+        };
+        reader.onerror = (error) => {
+          console.error('Error reading file:', error);
+          setFileContent(null);
+        };
+        reader.readAsText(selectedFile);
+      } else {
+        setFileContent(`Binary file: ${(selectedFile.size / 1024).toFixed(2)} KB`);
+      }
+    }
   };
 
   // Step 3: Encrypt and upload
@@ -92,7 +110,14 @@ export function EncryptFile() {
       {loading && step === 2 && (
         <div style={overlayStyle}>
           <div style={spinnerStyle}></div>
-          <div style={{ marginTop: 24, fontSize: 20, color: '#357abd', fontWeight: 500 }}>
+          <div
+            style={{
+              marginTop: 24,
+              fontSize: 20,
+              color: "#357abd",
+              fontWeight: 500,
+            }}
+          >
             Encrypting & Uploading...
           </div>
         </div>
@@ -248,6 +273,36 @@ export function EncryptFile() {
                   }}
                 >
                   Selected: <b>{file.name}</b>
+                </div>
+              )}
+
+              {/* File Content Preview */}
+              {file && (
+                <div
+                  style={{
+                    marginTop: "20px",
+                    padding: "15px",
+                    backgroundColor: "#f8f9fa",
+                    borderRadius: "8px",
+                    border: "1px solid #dee2e6",
+                    width: "100%"
+                  }}
+                >
+                  <pre
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      wordWrap: "break-word",
+                      maxHeight: "300px",
+                      overflow: "auto",
+                      backgroundColor: "#fff",
+                      padding: "10px",
+                      borderRadius: "4px",
+                      border: "1px solid #dee2e6",
+                      margin: 0
+                    }}
+                  >
+                    {fileContent || "Loading content..."}
+                  </pre>
                 </div>
               )}
             </div>
