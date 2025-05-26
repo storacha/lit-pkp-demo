@@ -15,12 +15,12 @@ export function useGoogleOAuthRedirect(isRecovery = false) {
         const provider = params.get('provider');
         const idToken = params.get('id_token');
         const accessToken = params.get('access_token');
-        const state = params.get('state');
+        const flow = params.get('flow');
         
         console.log('OAuth Redirect Hook:', {
           isRecovery,
-          state,
-          isRecoveryFlow: state === 'recovery=true',
+          flow,
+          isRecoveryFlow: flow === 'recovery',
           hasProvider: !!provider,
           hasIdToken: !!idToken,
           hasAccessToken: !!accessToken,
@@ -43,9 +43,9 @@ export function useGoogleOAuthRedirect(isRecovery = false) {
         }
 
         // Skip if this flow doesn't match our expected flow
-        const isRecoveryFlow = state === 'recovery=true';
+        const isRecoveryFlow = flow === 'recovery';
         if (isRecovery !== isRecoveryFlow) {
-          console.log(`Skipping ${isRecovery ? 'recovery' : 'primary'} flow - state mismatch`);
+          console.log(`Skipping ${isRecovery ? 'recovery' : 'primary'} flow - flow mismatch. Expected ${isRecovery ? 'recovery' : 'primary'} but got ${isRecoveryFlow ? 'recovery' : 'primary'}`);
           setLoading(false);
           return;
         }

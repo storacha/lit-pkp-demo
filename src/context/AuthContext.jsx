@@ -27,8 +27,8 @@ export function AuthProvider({ children }) {
   const hasAuthenticated = useRef(false);
 
   // OAuth hooks - keep them together
-  const { authMethod: primaryOAuthMethod, loading: primaryOAuthLoading, error: primaryOAuthError } = useGoogleOAuthRedirect();
-  const { authMethod: recoveryOAuthMethod, loading: recoveryOAuthLoading, error: recoveryOAuthError } = useGoogleOAuthRedirect();
+  const { authMethod: primaryOAuthMethod, loading: primaryOAuthLoading, error: primaryOAuthError } = useGoogleOAuthRedirect(false);
+  const { authMethod: recoveryOAuthMethod, loading: recoveryOAuthLoading, error: recoveryOAuthError } = useGoogleOAuthRedirect(true);
 
   // Minting hooks - keep them together
   const { mintPKP: mintPrimaryPKP, loading: mintPrimaryLoading, error: mintPrimaryError } = useMintPKP(false);
@@ -186,8 +186,8 @@ export function AuthProvider({ children }) {
       console.log('Setting up recovery PKP...');
       const provider = new GoogleProvider({
         litNodeClient,
-        redirectUri: window.location.origin + window.location.pathname,
-        state: 'recovery=true' // Explicitly set for recovery
+        redirectUri: window.location.origin + window.location.pathname + '?flow=recovery', // Add custom query parameter
+        state: '' // Empty state to avoid conflicts
       });
       await provider.signIn();
     } catch (err) {
