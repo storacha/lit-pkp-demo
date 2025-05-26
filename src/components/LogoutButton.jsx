@@ -1,14 +1,12 @@
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export function LogoutButton() {
-  const navigate = useNavigate();
   const { logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
-    // Force a refresh when redirecting to login
-    window.location.href = '/login';
+    // Force a refresh when redirecting to home
+    window.location.href = '/';
   };
 
   return (

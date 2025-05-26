@@ -13,6 +13,7 @@ export function useMintPKP(isRecovery = false) {
       return;
     }
 
+    // Set loading state before any async operations
     setLoading(true);
     setError(null);
 
@@ -59,7 +60,9 @@ export function useMintPKP(isRecovery = false) {
       setError(err);
       throw err;
     } finally {
-      setLoading(false);
+      // Keep loading state true until the component using this hook updates its state
+      // This ensures the loading spinner stays visible during the entire process
+      setTimeout(() => setLoading(false), 100);
     }
   };
 

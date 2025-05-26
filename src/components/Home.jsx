@@ -1,16 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PKPDetails } from './PKPDetails';
-import { Modal } from './Modal';
 import { spinnerStyle, overlayStyle, buttonContainerStyle, buttonStyle } from '../styles/common';
 
 // Add keyframes for spinner
 const spinnerKeyframes = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
 
-export function Login() {
-  const { setupPrimaryPKP, setupRecoveryPKP, isLoading, isAuthenticated, primaryPKP, recoveryPKP } = useAuth();
+export function Home() {
+  const { 
+    setupPrimaryPKP, 
+    setupRecoveryPKP, 
+    isLoading, 
+    isAuthenticated, 
+    primaryPKP, 
+    recoveryPKP, 
+    primaryAuthMethod,
+    recoveryAuthMethod 
+  } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSettingUpRecovery, setIsSettingUpRecovery] = useState(false);
   const navigate = useNavigate();
 
   const handleSignIn = async () => {
@@ -23,15 +32,27 @@ export function Login() {
     }
   };
 
-  // Show loading state
-  if (isLoading || isSigningIn) {
+  const handleSetupRecovery = async () => {
+    setIsSettingUpRecovery(true);
+    try {
+      await setupRecoveryPKP();
+    } catch (error) {
+      console.error('Recovery setup error:', error);
+      setIsSettingUpRecovery(false);
+    }
+  };
+
+  // Show loading state during initial load, sign in, or PKP minting
+  if (isLoading || isSigningIn || isSettingUpRecovery) {
     return (
       <div className="login-container">
         <style>{spinnerKeyframes}</style>
         <div style={overlayStyle}>
           <div style={spinnerStyle}></div>
           <div style={{ marginTop: 24, fontSize: 20, color: '#357abd', fontWeight: 500 }}>
-            {isSigningIn ? 'Connecting to Google...' : 'Minting PKP...'}
+            {isSigningIn ? 'Connecting to Google...' : 
+             isSettingUpRecovery ? 'Connecting to Google...' :
+             'Loading...'}
           </div>
         </div>
       </div>
@@ -75,7 +96,7 @@ export function Login() {
           {!recoveryPKP && (
             <button 
               className="next-btn" 
-              onClick={() => setupRecoveryPKP()}
+              onClick={handleSetupRecovery}
               style={{ ...buttonStyle, background: "#0077B6" }}
             >
               Setup Recovery PKP

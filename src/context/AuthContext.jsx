@@ -31,8 +31,13 @@ export function AuthProvider({ children }) {
   const { authMethod: recoveryOAuthMethod, loading: recoveryOAuthLoading, error: recoveryOAuthError } = useGoogleOAuthRedirect();
 
   // Minting hooks - keep them together
-  const { mintPKP: mintPrimaryPKP, loading: mintPrimaryLoading, error: mintPrimaryError } = useMintPKP();
-  const { mintPKP: mintRecoveryPKP, loading: mintRecoveryLoading, error: mintRecoveryError } = useMintPKP();
+  const { mintPKP: mintPrimaryPKP, loading: mintPrimaryLoading, error: mintPrimaryError } = useMintPKP(false);
+  const { mintPKP: mintRecoveryPKP, loading: mintRecoveryLoading, error: mintRecoveryError } = useMintPKP(true);
+
+  // Update loading state based on all possible loading states
+  useEffect(() => {
+    setIsLoading(primaryOAuthLoading || recoveryOAuthLoading || mintPrimaryLoading || mintRecoveryLoading);
+  }, [primaryOAuthLoading, recoveryOAuthLoading, mintPrimaryLoading, mintRecoveryLoading]);
 
   // Initialize Lit client
   useEffect(() => {
@@ -63,6 +68,7 @@ export function AuthProvider({ children }) {
         try {
           console.log('Starting primary PKP minting process');
           setPrimaryAuthMethod(primaryOAuthMethod);
+          setIsLoading(true);
 
           const pkp = await mintPrimaryPKP(primaryOAuthMethod);
           console.log('Primary PKP minted successfully:', pkp);
@@ -76,6 +82,8 @@ export function AuthProvider({ children }) {
         } catch (err) {
           console.error('Failed to mint primary PKP:', err);
           setError(err);
+        } finally {
+          setIsLoading(false);
         }
       }
     };
@@ -86,16 +94,29 @@ export function AuthProvider({ children }) {
   // Handle recovery PKP minting
   useEffect(() => {
     const handleRecoveryPKP = async () => {
+      console.log('Checking recovery PKP minting conditions:', {
+        hasRecoveryOAuthMethod: !!recoveryOAuthMethod,
+        hasRecoveryPKP: !!recoveryPKP,
+        authMethodType: recoveryOAuthMethod?.authMethodType,
+        hasAccessToken: !!recoveryOAuthMethod?.accessToken
+      });
+
       if (recoveryOAuthMethod && !recoveryPKP) {
         try {
+          console.log('Starting recovery PKP minting process');
           setRecoveryAuthMethod(recoveryOAuthMethod);
+          setIsLoading(true);
+
           const pkp = await mintRecoveryPKP(recoveryOAuthMethod);
+          console.log('Recovery PKP minted successfully:', pkp);
           setRecoveryPKP(pkp);
           localStorage.setItem('recoveryPKP', JSON.stringify(pkp));
           localStorage.setItem('recoveryAuthMethod', JSON.stringify(recoveryOAuthMethod));
         } catch (err) {
           console.error('Failed to mint recovery PKP:', err);
           setError(err);
+        } finally {
+          setIsLoading(false);
         }
       }
     };
@@ -143,9 +164,11 @@ export function AuthProvider({ children }) {
       setIsLoading(true);
       setError(null);
       const litNodeClient = await getLitNodeClient();
+      console.log('Setting up primary PKP...');
       const provider = new GoogleProvider({
         litNodeClient,
         redirectUri: window.location.origin + window.location.pathname,
+        state: '' // Empty string for primary to ensure no state is set
       });
       await provider.signIn();
     } catch (err) {
@@ -160,10 +183,11 @@ export function AuthProvider({ children }) {
       setIsLoading(true);
       setError(null);
       const litNodeClient = await getLitNodeClient();
+      console.log('Setting up recovery PKP...');
       const provider = new GoogleProvider({
         litNodeClient,
         redirectUri: window.location.origin + window.location.pathname,
-        state: 'recovery=true'
+        state: 'recovery=true' // Explicitly set for recovery
       });
       await provider.signIn();
     } catch (err) {
