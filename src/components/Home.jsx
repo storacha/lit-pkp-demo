@@ -16,7 +16,8 @@ export function Home() {
     primaryPKP, 
     recoveryPKP, 
     primaryAuthMethod,
-    recoveryAuthMethod 
+    recoveryAuthMethod,
+    logout
   } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isSettingUpRecovery, setIsSettingUpRecovery] = useState(false);
@@ -42,6 +43,23 @@ export function Home() {
     }
   };
 
+  // Function to decode JWT and get email
+  const getEmailFromAuthMethod = (authMethod) => {
+    if (!authMethod?.accessToken) return null;
+    try {
+      const base64Url = authMethod.accessToken.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      const payload = JSON.parse(jsonPayload);
+      return payload.email;
+    } catch (err) {
+      console.error('Error decoding JWT:', err);
+      return null;
+    }
+  };
+
   // Show loading state during initial load, sign in, or PKP minting
   if (isLoading || isSigningIn || isSettingUpRecovery) {
     return (
@@ -61,6 +79,9 @@ export function Home() {
 
   // Show PKP details if authenticated
   if (isAuthenticated && primaryPKP) {
+    const primaryEmail = getEmailFromAuthMethod(primaryAuthMethod);
+    const recoveryEmail = getEmailFromAuthMethod(recoveryAuthMethod);
+
     return (
       <div className="login-container pkp-panel-wide">
         <style>{spinnerKeyframes}</style>
@@ -69,20 +90,22 @@ export function Home() {
         <PKPDetails 
           title="Primary PKP Details" 
           data={primaryPKP} 
+          email={primaryEmail}
           showCopyButton={true} 
         />
 
         {recoveryPKP && (
           <PKPDetails 
             title="Recovery PKP Details" 
+            email={recoveryEmail}
             data={recoveryPKP} 
           />
         )}
 
-        <PKPDetails 
+        {/* <PKPDetails 
           title="Associated Account DID" 
           data="did:mailto:storacha.network:felipe" 
-        />
+        /> */}
 
         <div style={buttonContainerStyle}>
           <button 
@@ -103,6 +126,13 @@ export function Home() {
             </button>
           )}
         </div>
+
+        {recoveryPKP && (
+          <div>
+            <h2>Recovery PKP</h2>
+            <p>Associated Email: {recoveryEmail || 'Not available'}</p>
+          </div>
+        )}
       </div>
     );
   }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cardStyle, titleStyle, contentStyle } from '../styles/common';
 
-export function PKPDetails({ title, data, showCopyButton = false }) {
+export function PKPDetails({ title, data, showCopyButton = false, email = null }) {
   const [copied, setCopied] = useState(false);
   const jsonData = JSON.stringify(data, null, 2);
 
@@ -15,7 +15,7 @@ export function PKPDetails({ title, data, showCopyButton = false }) {
 
   return (
     <div style={cardStyle}>
-      <div style={titleStyle}>{title}</div>
+      <div style={titleStyle}>{title} {email ? <span style={{ fontSize: '0.8em' }}>({email})</span> : ''}</div>
       <div style={{ ...contentStyle, position: showCopyButton ? "relative" : "static" }}>
         {showCopyButton && (
           <button
