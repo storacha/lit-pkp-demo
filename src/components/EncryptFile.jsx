@@ -176,7 +176,7 @@ export function EncryptFile() {
             }}
           >
             <div style={{ fontWeight: 600, fontSize: "1.08rem" }}>
-              Selected Space/Bucket
+              Selected Space
               <div style={{ marginTop: 4 }}>
                 <span style={{ color: "#357abd" }}>
                   {spaceName ? <b>{spaceName}</b> : <i>Unnamed</i>}

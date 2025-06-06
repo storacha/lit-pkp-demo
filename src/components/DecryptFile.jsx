@@ -6,6 +6,7 @@ import * as Proof from "@storacha/client/proof";
 import { parseLink } from "@ucanto/core";
 import DelegationDetails from "./DelegationDetails";
 import { getLitNodeClient } from '../utils/lit';
+import { Signer } from "@ucanto/principal/ed25519";
 
 // Spinner CSS (inline for simplicity)
 const spinnerStyle = {
@@ -50,6 +51,7 @@ export function DecryptFile() {
     recoveryPKP,
     recoveryAuthMethod,
   } = useAuth();
+  const [decrypterDid, setDecrypterDid] = useState(null);
   const {
     loading,
     error,
@@ -82,6 +84,11 @@ export function DecryptFile() {
         .catch(() => setDelegationLoaded(false));
     }
   }, [delegation]);
+
+  useEffect(() => {
+    const signer = Signer.parse(import.meta.env.VITE_AGENT_PK);
+    setDecrypterDid(signer.did());
+  }, []);
 
   // Handle decryption
   const handleDecrypt = async () => {
@@ -123,7 +130,7 @@ export function DecryptFile() {
     <div
       className="login-container pkp-panel-wide"
       style={{
-        maxWidth: 620,
+        maxWidth: 820,
         margin: "2rem auto",
         boxShadow: "0 8px 32px 0 rgba(31,38,135,0.10)",
         borderRadius: 18,
@@ -169,6 +176,31 @@ export function DecryptFile() {
         }}
       >
         <label
+          htmlFor="did-input"
+          style={{
+            fontWeight: 500,
+            fontSize: 15,
+            color: "#357abd",
+            marginBottom: 4,
+            display: "block",
+          }}
+        >
+          Application DID
+        </label>
+        <input
+          id="did-input"
+          type="text"
+          value={decrypterDid}
+          style={{
+            width: "100%",
+            padding: "0.7rem",
+            borderRadius: 6,
+            border: "1px solid #d0d7de",
+            fontSize: 15,
+            marginBottom: 12,
+          }}
+        />
+        <label
           htmlFor="cid-input"
           style={{
             fontWeight: 500,
@@ -195,6 +227,7 @@ export function DecryptFile() {
             marginBottom: 12,
           }}
         />
+
         <label
           htmlFor="delegation-input"
           style={{
